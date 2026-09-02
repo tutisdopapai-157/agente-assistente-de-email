@@ -3,8 +3,8 @@ from google import genai
 
 # --- 1. PUXANDO AS SENHAS DO COFRE DA NUVEM ---
 # O código agora vai buscar as senhas de forma invisível!
-MINHA_CHAVE_API = st.secrets["AQ.Ab8RN6JaJKM8wEXO2HvxdIIJ8eVFNwEDIXtK7bJ7_mJZd6faUQVE_API"]
-SENHA_DO_ADMIN = st.secrets["ADMIN"]
+MINHA_CHAVE_API = st.secrets["CHAVE_API"]
+SENHA_DO_ADMIN = st.secrets["SENHA_ADMIN"]
 # ----------------------------------------------
 
 st.set_page_config(page_title="Gerador de Respostas", page_icon="📝", layout="centered")
