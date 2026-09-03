@@ -1,10 +1,12 @@
 import streamlit as st
 from google import genai
+import requests  # <-- Ferramenta para conversar com a planilha
 
-# --- 1. PUXANDO A CHAVE DO COFRE ---
+# --- 1. PUXANDO AS INFORMAÇÕES DO COFRE ---
 MINHA_CHAVE_API = st.secrets["CHAVE_API"]
-NOME_DA_SUA_EMPRESA = "Sua Empresa" # Coloque o nome do seu negócio aqui
-# ----------------------------------
+LINK_WEBHOOK = st.secrets["LINK_PLANILHA"]
+NOME_DA_SUA_EMPRESA = "Sua Empresa" 
+# ------------------------------------------
 
 st.set_page_config(page_title="Central de Atendimento", page_icon="🎧", layout="centered")
 
@@ -24,13 +26,32 @@ with col1:
 with col2:
     btn_humano = st.button("Enviar para Analista 🚨", use_container_width=True)
 
-# --- LÓGICA DO BOTÃO HUMANO ---
+
+# --- LÓGICA DO BOTÃO HUMANO (CONEXÃO COM PLANILHA) ---
 if btn_humano:
     if not nome_cliente or not mensagem_cliente:
         st.warning("⚠️ Por favor, preencha seu nome e a mensagem para enviarmos o chamado.")
     else:
-        # AQUI ENTRARÁ A CONEXÃO COM O BANCO DE DADOS NO FUTURO
-        st.success(f"✅ Obrigado, {nome_cliente}! Seu chamado foi enviado para a nossa equipe. Em breve um analista entrará em contato.")
+        with st.spinner("Enviando chamado para a equipe..."):
+            try:
+                # 1. Prepara a "caixa" com os dados do cliente
+                dados = {
+                    "nome": nome_cliente,
+                    "mensagem": mensagem_cliente
+                }
+                
+                # 2. Envia a caixa para o seu link do Google Planilhas
+                resposta = requests.post(LINK_WEBHOOK, json=dados)
+                
+                # 3. Avisa se deu tudo certo
+                if resposta.status_code == 200:
+                    st.success(f"✅ Obrigado, {nome_cliente}! Seu chamado foi enviado para a nossa equipe. Em breve um analista entrará em contato.")
+                else:
+                    st.error("❌ Ocorreu um problema ao enviar. Tente novamente.")
+                    
+            except Exception as e:
+                st.error(f"Ocorreu um erro de conexão: {e}")
+
 
 # --- LÓGICA DO BOTÃO IA ---
 if btn_ia:
@@ -40,17 +61,12 @@ if btn_ia:
         with st.spinner("Nossa IA está lendo sua mensagem..."):
             try:
                 client = genai.Client(api_key=MINHA_CHAVE_API)
-                
-                # Prompt ajustado para falar DIRETAMENTE com o cliente
                 prompt = f"""
-                Você é o assistente virtual amigável da empresa {NOME_DA_SUA_EMPRESA}.
-                Você está falando diretamente com um cliente chamado {nome_cliente}.
-                
-                MENSAGEM DO CLIENTE:
-                \"\"\"{mensagem_cliente}\"\"\"
-                
-                Escreva uma resposta direta para o cliente, tentando resolver a dúvida dele da melhor forma possível, de forma educada e empática. 
-                Se for um problema complexo que só um humano pode resolver, avise-o para clicar no botão "Enviar para Analista".
+                Você é o assistente virtual da empresa {NOME_DA_SUA_EMPRESA}.
+                Fale diretamente com um cliente chamado {nome_cliente}.
+                MENSAGEM: \"\"\"{mensagem_cliente}\"\"\"
+                Escreva uma resposta direta para tentar resolver a dúvida de forma empática. 
+                Se for complexo, avise-o para clicar em "Enviar para Analista".
                 """
                 
                 response = client.models.generate_content(model='gemini-3.6-flash', contents=prompt)
