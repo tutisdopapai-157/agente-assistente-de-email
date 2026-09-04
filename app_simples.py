@@ -9,7 +9,7 @@ NOME_DA_SUA_EMPRESA = "Sua Empresa"
 
 st.set_page_config(page_title="Central de Atendimento", page_icon="🎧", layout="centered")
 
-st.title(f"🎧 Atendimento - {Nexus}")
+st.title(f"🎧 Atendimento - {NOME_DA_SUA_EMPRESA}")
 st.write("Bem-vindo! Nossa IA pode responder na hora, ou você pode abrir um chamado.")
 st.write("---")
 
