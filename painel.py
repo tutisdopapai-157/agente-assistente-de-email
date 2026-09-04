@@ -37,8 +37,6 @@ with col2:
         st.session_state.logado = False
         st.rerun()
 
-st.write("---")
-
 # 1. Pede para a planilha enviar a lista de chamados
 with st.spinner("Buscando chamados..."):
     try:
@@ -48,19 +46,50 @@ with st.spinner("Buscando chamados..."):
         st.error("Erro ao conectar com a planilha.")
         chamados = []
 
-# 2. Mostra os chamados na tela
-if len(chamados) == 0:
-    st.success("🎉 Nenhum chamado pendente! A fila está limpa.")
+# ==========================================
+# --- A NOVIDADE: MINI PAINEL DE ESTATÍSTICAS ---
+# ==========================================
+st.write("---")
+
+# O Python faz as contas para você
+total_chamados = len(chamados)
+total_urgentes = sum(1 for chamado in chamados if "Urgente" in chamado.get('prioridade', ''))
+
+# Mostra os números grandes na tela
+metrica1, metrica2 = st.columns(2)
+with metrica1:
+    st.metric("Total de Chamados 📋", total_chamados)
+with metrica2:
+    st.metric("🚨 Casos Urgentes", total_urgentes)
+# ==========================================
+
+# ==========================================
+# --- BARRA DE PESQUISA ---
+# ==========================================
+st.write("---")
+termo_busca = st.text_input("🔍 Buscar por nome do cliente:", placeholder="Digite o nome para filtrar...")
+
+if termo_busca:
+    chamados_filtrados = [c for c in chamados if termo_busca.lower() in c['nome'].lower()]
 else:
-    for chamado in chamados:
-        # Cria uma caixa expansível para cada chamado
+    chamados_filtrados = chamados
+# ==========================================
+
+st.write("---")
+
+# 2. Mostra os chamados na tela 
+if len(chamados_filtrados) == 0:
+    if termo_busca:
+        st.warning(f"Nenhum chamado encontrado para '{termo_busca}'.")
+    else:
+        st.success("🎉 Nenhum chamado pendente! A fila está limpa.")
+else:
+    for chamado in chamados_filtrados:
         with st.expander(f"{chamado['prioridade']} | 👤 {chamado['nome']} ({chamado['data']})"):
             st.write(f"**Mensagem:** {chamado['mensagem']}")
             
-            # Botão para resolver e apagar da planilha
             if st.button("✅ Marcar como Resolvido", key=f"btn_{chamado['linha']}"):
                 with st.spinner("Apagando..."):
-                    # Envia o comando especial "apagar" com o número da linha
                     requests.post(LINK_WEBHOOK, json={"acao": "apagar", "linha": chamado['linha']})
                     st.success("Resolvido! O chamado foi removido.")
-                    st.rerun() # Atualiza a tela para sumir com o chamado
+                    st.rerun()
