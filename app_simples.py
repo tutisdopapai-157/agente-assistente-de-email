@@ -65,7 +65,7 @@ if btn_ia:
                 Se for algo que você não consegue resolver, avise-o para clicar no botão "Enviar para Analista"."""
                 
                 # Mudamos para a versão mais estável e oficial do Gemini
-                response = client.models.generate_content(model='gemini-2.0-flash', contents=prompt)
+                response = client.models.generate_content(model='gemini-3.6-flash', contents=prompt)
                 
                 st.info(f"**Resposta Virtual:**")
                 st.write(response.text)
