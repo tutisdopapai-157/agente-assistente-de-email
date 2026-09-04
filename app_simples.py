@@ -5,7 +5,7 @@ import requests
 # Puxando do cofre
 MINHA_CHAVE_API = st.secrets["CHAVE_API"]
 LINK_WEBHOOK = st.secrets["LINK_PLANILHA"]
-NOME_DA_SUA_EMPRESA = "Sua Empresa" 
+NOME_DA_SUA_EMPRESA = "Nexus" 
 
 st.set_page_config(page_title="Central de Atendimento", page_icon="🎧", layout="centered")
 
